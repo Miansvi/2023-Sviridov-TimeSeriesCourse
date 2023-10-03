@@ -151,7 +151,10 @@ class NaiveBestMatchFinder(BestMatchFinder):
             excl_zone = int(np.ceil(m / self.excl_zone_denom))
         
         # INSERT YOUR CODE
+        dist = [DTW_distance(self.ts_data[i], self.query, self.r) for i in range(N)]
 
+        self.bestmatch = self._top_k_match(dist, m, bsf, excl_zone)
+              
         return self.bestmatch
 
 
