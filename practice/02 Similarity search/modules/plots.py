@@ -276,7 +276,7 @@ def plot_bestmatch_results(ts, query, bestmatch_results):
                       showlegend=False,
                       title_x=0.5)
                   
-    fig.show()
+    fig.show(renderer="colab")
 
 
 def pie_chart(labels, values, plot_title='Pie chart'):
