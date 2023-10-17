@@ -6,7 +6,7 @@ from modules.bestmatch import *
 
 
 default_metrics_params = {'euclidean': {'normalize': True},
-                         'dtw': {'normalize': True, 'r': 0.05, 'use_lb': True}
+                         'dtw': {'exclusion_zone' : 1, 'top_k': 3, 'normalize': True, 'r': 0.05}
                          }
 
 class TimeSeriesKNN:
@@ -69,11 +69,24 @@ class TimeSeriesKNN:
         dist : float
             The distance between the train and test samples.
         """
+        
+        if self.metric=='euclidean':
+            if self.metric_params['normalize']:
+                dist_func = norm_ED_distance
+            else:
+                dist_func = ED_distance
+        elif self.metric=='dtw':
+            if self.metric_params['normalize']:
+                x_train = z_normalize(x_train)
+                x_test = z_normalize(x_test)
+            dist_func = UCR_DTW
+        else:
+            raise ValueError("Metric must be 'euclidean' or 'dtw'.")
 
-        dist = 0
-
-        # INSERT YOUR CODE
-
+        dist = dist_func(x_train, x_test, *list(self.metric_params.values())[1:])
+        
+        if self.metric=='dtw':
+          dist = dist.perform()['distance']
         return dist
 
 
@@ -93,8 +106,10 @@ class TimeSeriesKNN:
         """
 
         neighbors = []
-
-        # INSERT YOUR CODE
+        
+        for i, x_train in enumerate(self.X_train):
+            neighbors.append((self._distance(x_train, x_test), self.Y_train[i]))
+        neighbors = sorted(neighbors, key=lambda x: x[0], reverse=True)[:self.n_neighbors]
 
         return neighbors
 
@@ -116,7 +131,11 @@ class TimeSeriesKNN:
 
         y_pred = []
 
-        # INSERT YOUR CODE
+        for x_test in X_test:
+            neighbors = self._find_neighbors(x_test)
+            labels = np.array(neighbors)[:, 1]
+            unique_labels, counts = np.unique(labels, return_counts=True)
+            y_pred.append(int(unique_labels[np.argmax(counts)]))
 
         return y_pred
 
@@ -143,6 +162,6 @@ def calculate_accuracy(y_true, y_pred):
     for i in range(len(y_true)):
         if (y_pred[i] == y_true[i]):
             score = score + 1
-    score = score/len(y_true)
+    score = score / len(y_true)
 
     return score
