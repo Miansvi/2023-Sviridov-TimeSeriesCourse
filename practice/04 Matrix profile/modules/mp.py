@@ -31,8 +31,11 @@ def compute_mp(ts1, m, exclusion_zone=None, ts2=None):
         (matrix profile, matrix profile index, subsequence length, 
         exclusion zone, the first and second time series).
     """
+    if exclusion_zone is not None:
+      stumpy.config.STUMPY_EXCL_ZONE_DENOM = exclusion_zone
+
     
-    # INSERT YOUR CODE
+    mp = stumpy.stump(ts1, m, ts2)
 
     return {'mp': mp[:, 0],
             'mpi': mp[:, 1],

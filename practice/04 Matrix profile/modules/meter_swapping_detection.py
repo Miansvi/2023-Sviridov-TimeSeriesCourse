@@ -68,12 +68,27 @@ def meter_swapping_detection(heads, tails, house_idx, m):
     """
 
     eps = 0.001
+    h_keys = [k for k in heads.keys()]
+    t_keys = [k for k in tails.keys()]
+    min_score = float('inf')
+    min_i = 0
+    min_j = 0
+    for i, h_key in enumerate(heads):
+      for j, t_key in enumerate(tails):
+        mp1 = compute_mp(heads[h_keys[i]].values.flatten(), m, ts2 = tails[t_keys[j]].values.flatten())
+        mp2 = compute_mp(heads[h_keys[i]].values.flatten(), m, ts2 = tails[t_keys[i]].values.flatten())
+        swap_score = np.min(mp1['mp']) / (np.min(mp2['mp']) + eps)
+        if swap_score < min_score:
+          min_score = swap_score
+          min_i = h_key
+          min_j = t_key
 
-    min_score = {}
-
-    # INSERT YOUR CODE
     
-    return min_score
+    return {
+      'i': min_i,
+      'j': min_j,
+      'min_score' : min_score,
+    }
 
 
 def plot_consumptions_ts(consumptions, cutoff, house_idx):
